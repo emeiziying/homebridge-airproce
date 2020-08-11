@@ -124,7 +124,7 @@ export class AirproceAccessory implements AccessoryPlugin {
    */
   handleCurrentAirPurifierStateGet(callback) {
     this.log.debug('Triggered GET CurrentAirPurifierState');
-    callback(null, this.activeStatus);
+    callback(null, this.activeStatus ? 2 : 0);
   }
 
   /**
@@ -132,7 +132,7 @@ export class AirproceAccessory implements AccessoryPlugin {
    */
   handleTargetAirPurifierStateGet(callback) {
     this.log.debug('Triggered GET TargetAirPurifierState');
-    callback(null, this.activeStatus);
+    callback(null, 1);
   }
 
   /**
