@@ -53,6 +53,15 @@ export class AirproceAccessory implements AccessoryPlugin {
       .on(CharacteristicEventTypes.SET, this.handleActiveSet.bind(this));
 
     this.airproceService
+      .getCharacteristic(this.hap.Characteristic.CurrentAirPurifierState)
+      .on('get', this.handleCurrentAirPurifierStateGet.bind(this));
+
+    this.airproceService
+      .getCharacteristic(this.hap.Characteristic.TargetAirPurifierState)
+      .on('get', this.handleTargetAirPurifierStateGet.bind(this))
+      .on('set', this.handleTargetAirPurifierStateSet.bind(this));
+
+    this.airproceService
       .getCharacteristic(this.hap.Characteristic.RotationSpeed)
       .on(CharacteristicEventTypes.GET, this.handleRotationSpeedGet.bind(this))
       .on(CharacteristicEventTypes.SET, this.handleRotationSpeedSet.bind(this));
@@ -108,6 +117,30 @@ export class AirproceAccessory implements AccessoryPlugin {
     this.updateStatus(this.activeStatus ? 0 : 16, () => {
       callback(null);
     });
+  }
+
+  /**
+   * Handle requests to get the current value of the "Current Air Purifier State" characteristic
+   */
+  handleCurrentAirPurifierStateGet(callback) {
+    this.log.debug('Triggered GET CurrentAirPurifierState');
+    callback(null, this.activeStatus);
+  }
+
+  /**
+   * Handle requests to get the current value of the "Target Air Purifier State" characteristic
+   */
+  handleTargetAirPurifierStateGet(callback) {
+    this.log.debug('Triggered GET TargetAirPurifierState');
+    callback(null, this.activeStatus);
+  }
+
+  /**
+   * Handle requests to set the "Target Air Purifier State" characteristic
+   */
+  handleTargetAirPurifierStateSet(value, callback) {
+    this.log.debug('Triggered SET TargetAirPurifierState:' + value);
+    callback(null);
   }
 
   /**
