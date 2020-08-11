@@ -1,16 +1,16 @@
 {
   "private": true,
-  "displayName": "Plugin Name",
-  "name": "homebridge-plugin-name",
-  "version": "1.0.0",
-  "description": "A short description about what your plugin does.",
+  "displayName": "Airproce",
+  "name": "homebridge-airproce",
+  "version": "0.0.1",
+  "description": "Control Airproce with HomeBridge",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git://github.com/emeiziying/homebridge-airproce.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/emeiziying/homebridge-airproce/issues"
   },
   "engines": {
     "node": ">=10.17.0",
@@ -26,7 +26,9 @@
   "keywords": [
     "homebridge-plugin"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "js-sha1": "^0.6.0"
+  },
   "devDependencies": {
     "@types/node": "^14.0.14",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
