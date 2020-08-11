@@ -27,6 +27,7 @@
     "homebridge-plugin"
   ],
   "dependencies": {
+    "axios": "^0.19.2",
     "js-sha1": "^0.6.0"
   },
   "devDependencies": {

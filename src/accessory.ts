@@ -12,15 +12,17 @@ import {
 } from 'homebridge';
 
 import sha1 from 'js-sha1';
+import axios from 'axios';
 
 interface AirproceData {
-  userId: number;
+  userId: string;
   deviceId: string;
   rank?: number;
   mode?: number;
   function?: string;
   time?: number;
   lang?: string;
+  sec?: string;
 }
 
 export class AirproceAccessory implements AccessoryPlugin {
@@ -64,13 +66,13 @@ export class AirproceAccessory implements AccessoryPlugin {
 
     this.log.info(
       this.getSecret({
-        deviceId: 75461,
+        deviceId: '75461',
         rank: 5,
         mode: 1,
         function: '021300000000',
-        time: '123',
+        time: +new Date(),
         lang: 'zh-CN',
-        userId: 86013,
+        userId: '86013',
       }),
     );
   }
@@ -134,7 +136,13 @@ export class AirproceAccessory implements AccessoryPlugin {
     callback(null);
   }
 
-  getSecret(data) {
+  httpGet(data: AirproceData) {
+    axios.get('https://wx.airproce.com/appAPI/controlStatus', {
+      params: data,
+    });
+  }
+
+  getSecret(data: AirproceData) {
     const keys = Object.keys(data).sort();
 
     let tmp = this.config.hash;
