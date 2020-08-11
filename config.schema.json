@@ -16,6 +16,24 @@
         "type": "string",
         "required": true,
         "default": ""
+      },
+      "userId": {
+        "title": "UserId",
+        "type": "string",
+        "required": true,
+        "default": ""
+      },
+      "deviceId": {
+        "title": "DeviceId",
+        "type": "string",
+        "required": true,
+        "default": ""
+      },
+      "segment": {
+        "title": "Segment",
+        "type": "number",
+        "required": true,
+        "default": 5
       }
     }
   }
