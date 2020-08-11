@@ -64,17 +64,7 @@ export class AirproceAccessory implements AccessoryPlugin {
 
     this.log.info('Airproce finished initializing!');
 
-    this.log.info(
-      this.getSecret({
-        deviceId: '75461',
-        rank: 5,
-        mode: 1,
-        function: '021300000000',
-        time: +new Date(),
-        lang: 'zh-CN',
-        userId: '86013',
-      }),
-    );
+    this.getStatus();
   }
 
   /*
@@ -98,7 +88,10 @@ export class AirproceAccessory implements AccessoryPlugin {
    */
   handleActiveGet(callback: CharacteristicGetCallback) {
     this.log.debug('Triggered GET Active');
-    callback(null, this.activeStatus);
+
+    this.getStatus(() => {
+      callback(null, this.activeStatus);
+    });
   }
 
   /**
@@ -109,8 +102,12 @@ export class AirproceAccessory implements AccessoryPlugin {
     callback: CharacteristicSetCallback,
   ) {
     this.log.debug('Triggered SET Active:', value);
+
     this.activeStatus = value as number;
-    callback(null);
+
+    this.updateStatus(this.activeStatus ? 0 : 16, () => {
+      callback(null);
+    });
   }
 
   /**
@@ -119,6 +116,11 @@ export class AirproceAccessory implements AccessoryPlugin {
   handleRotationSpeedGet(callback: CharacteristicGetCallback) {
     this.log.debug('Triggered GET RotationSpeed');
     const step = 100 / this.config.segment;
+
+    // this.getStatus(() => {
+    //   callback(null, this.rotationSpeed * step);
+    // });
+
     callback(null, this.rotationSpeed * step);
   }
 
@@ -133,13 +135,71 @@ export class AirproceAccessory implements AccessoryPlugin {
     const speed = value as number;
     const step = 100 / this.config.segment;
     this.rotationSpeed = Math.ceil(speed / step);
-    callback(null);
+
+    this.updateStatus(1, () => {
+      callback(null);
+    });
   }
 
-  httpGet(data: AirproceData) {
-    axios.get('https://wx.airproce.com/appAPI/controlStatus', {
-      params: data,
-    });
+  getStatus(callback?) {
+    this.sendRequest(
+      {
+        userId: this.config.userId,
+        deviceId: this.config.deviceId,
+      },
+      (res) => {
+        if (res) {
+          this.activeStatus = res.control.rank === 0 ? 0 : 1;
+          this.rotationSpeed = res.control.rank;
+        } else {
+          this.activeStatus = 0;
+          this.rotationSpeed = 0;
+        }
+
+        callback && callback();
+      },
+    );
+  }
+
+  updateStatus(mode, callback) {
+    this.sendRequest(
+      {
+        userId: this.config.userId,
+        deviceId: this.config.deviceId,
+        rank: this.rotationSpeed,
+        mode: mode,
+        function: '021300000000',
+        time: +new Date(),
+        lang: 'zh-CN',
+      },
+      (res) => {
+        if (res) {
+          this.activeStatus = res.control.rank === 0 ? 0 : 1;
+          this.rotationSpeed = res.control.rank;
+        } else {
+          this.activeStatus = 0;
+          this.rotationSpeed = 0;
+        }
+        callback(null);
+      },
+    );
+  }
+
+  sendRequest(data: AirproceData, callback?) {
+    data.sec = this.getSecret(data);
+    this.log.info(JSON.stringify(data));
+    axios
+      .get('https://wx.airproce.com/appAPI/controlStatus', {
+        params: data,
+      })
+      .then((response) => {
+        this.log.info(JSON.stringify(response.data));
+        callback && callback(response.data);
+      })
+      .catch((error) => {
+        this.log.info('SendRequest Fail ' + JSON.stringify(error));
+        callback && callback(null);
+      });
   }
 
   getSecret(data: AirproceData) {
