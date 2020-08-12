@@ -63,6 +63,11 @@ export class AirproceAccessory implements AccessoryPlugin {
 
     this.airproceService
       .getCharacteristic(this.hap.Characteristic.RotationSpeed)
+      .setProps({
+        minValue: 0,
+        maxValue: 5,
+        minStep: 1,
+      })
       .on(CharacteristicEventTypes.GET, this.handleRotationSpeedGet.bind(this))
       .on(CharacteristicEventTypes.SET, this.handleRotationSpeedSet.bind(this));
 
@@ -100,6 +105,11 @@ export class AirproceAccessory implements AccessoryPlugin {
 
     this.getStatus(() => {
       callback(null, this.activeStatus);
+
+      this.airproceService.updateCharacteristic(
+        this.hap.Characteristic.Active,
+        this.activeStatus,
+      );
     });
   }
 
@@ -148,13 +158,12 @@ export class AirproceAccessory implements AccessoryPlugin {
    */
   handleRotationSpeedGet(callback: CharacteristicGetCallback) {
     this.log.debug('Triggered GET RotationSpeed');
-    const step = 100 / this.config.segment;
 
     // this.getStatus(() => {
     //   callback(null, this.rotationSpeed * step);
     // });
 
-    callback(null, this.rotationSpeed * step);
+    callback(null, this.rotationSpeed);
   }
 
   /**
@@ -165,10 +174,7 @@ export class AirproceAccessory implements AccessoryPlugin {
     callback: CharacteristicSetCallback,
   ) {
     this.log.debug('Triggered SET RotationSpeed:', value);
-    const speed = value as number;
-    const step = 100 / this.config.segment;
-    this.rotationSpeed = Math.ceil(speed / step);
-
+    this.rotationSpeed = value as number;
     this.updateStatus(1, () => {
       callback(null);
     });
