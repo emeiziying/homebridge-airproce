@@ -30,7 +30,7 @@ export class AirproceAccessory implements AccessoryPlugin {
   private readonly config: AccessoryConfig;
   private readonly name: string;
   private readonly hash: string;
-  private activeStatus = 0;
+  private OnStatus = 0;
   private rotationSpeed = 0;
 
   private readonly airproceService: Service;
@@ -46,20 +46,11 @@ export class AirproceAccessory implements AccessoryPlugin {
 
     this.log.debug('Airproce Accessory Plugin Loaded');
 
-    this.airproceService = new this.hap.Service.AirPurifier(this.name);
+    this.airproceService = new this.hap.Service.Fan(this.name);
     this.airproceService
-      .getCharacteristic(this.hap.Characteristic.Active)
-      .on(CharacteristicEventTypes.GET, this.handleActiveGet.bind(this))
-      .on(CharacteristicEventTypes.SET, this.handleActiveSet.bind(this));
-
-    this.airproceService
-      .getCharacteristic(this.hap.Characteristic.CurrentAirPurifierState)
-      .on('get', this.handleCurrentAirPurifierStateGet.bind(this));
-
-    this.airproceService
-      .getCharacteristic(this.hap.Characteristic.TargetAirPurifierState)
-      .on('get', this.handleTargetAirPurifierStateGet.bind(this))
-      .on('set', this.handleTargetAirPurifierStateSet.bind(this));
+      .getCharacteristic(this.hap.Characteristic.On)
+      .on(CharacteristicEventTypes.GET, this.handleOnGet.bind(this))
+      .on(CharacteristicEventTypes.SET, this.handleOnSet.bind(this));
 
     this.airproceService
       .getCharacteristic(this.hap.Characteristic.RotationSpeed)
@@ -98,63 +89,36 @@ export class AirproceAccessory implements AccessoryPlugin {
   }
 
   /**
-   * Handle requests to get the current value of the "Active" characteristic
+   * Handle requests to get the current value of the "On" characteristic
    */
-  handleActiveGet(callback: CharacteristicGetCallback) {
-    this.log.debug('Triggered GET Active');
+  handleOnGet(callback: CharacteristicGetCallback) {
+    this.log.debug('Triggered GET On');
 
     this.getStatus(() => {
-      callback(null, this.activeStatus);
+      callback(null, this.OnStatus);
 
       this.airproceService.updateCharacteristic(
-        this.hap.Characteristic.Active,
-        this.activeStatus,
+        this.hap.Characteristic.On,
+        this.OnStatus,
       );
     });
   }
 
   /**
-   * Handle requests to set the "Active" characteristic
+   * Handle requests to set the "On" characteristic
    */
-  handleActiveSet(
-    value: CharacteristicValue,
-    callback: CharacteristicSetCallback,
-  ) {
-    this.log.debug('Triggered SET Active:', value);
+  handleOnSet(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    this.log.debug('Triggered SET On:', value);
 
-    this.activeStatus = value as number;
+    this.OnStatus = value as number;
 
-    this.updateStatus(this.activeStatus ? 0 : 16, () => {
+    this.updateStatus(this.OnStatus ? 0 : 16, () => {
       callback(null);
     });
   }
 
   /**
-   * Handle requests to get the current value of the "Current Air Purifier State" characteristic
-   */
-  handleCurrentAirPurifierStateGet(callback) {
-    this.log.debug('Triggered GET CurrentAirPurifierState');
-    callback(null, this.activeStatus ? 2 : 0);
-  }
-
-  /**
-   * Handle requests to get the current value of the "Target Air Purifier State" characteristic
-   */
-  handleTargetAirPurifierStateGet(callback) {
-    this.log.debug('Triggered GET TargetAirPurifierState');
-    callback(null, 1);
-  }
-
-  /**
-   * Handle requests to set the "Target Air Purifier State" characteristic
-   */
-  handleTargetAirPurifierStateSet(value, callback) {
-    this.log.debug('Triggered SET TargetAirPurifierState:' + value);
-    callback(null);
-  }
-
-  /**
-   * Handle requests to get the current value of the "Active" characteristic
+   * Handle requests to get the current value of the "On" characteristic
    */
   handleRotationSpeedGet(callback: CharacteristicGetCallback) {
     this.log.debug('Triggered GET RotationSpeed');
@@ -167,13 +131,14 @@ export class AirproceAccessory implements AccessoryPlugin {
   }
 
   /**
-   * Handle requests to set the "Active" characteristic
+   * Handle requests to set the "On" characteristic
    */
   handleRotationSpeedSet(
     value: CharacteristicValue,
     callback: CharacteristicSetCallback,
   ) {
     this.log.debug('Triggered SET RotationSpeed:', value);
+    
     this.rotationSpeed = value as number;
     this.updateStatus(1, () => {
       callback(null);
@@ -188,10 +153,10 @@ export class AirproceAccessory implements AccessoryPlugin {
       },
       (res) => {
         if (res) {
-          this.activeStatus = res.control.rank === 0 ? 0 : 1;
+          this.OnStatus = res.control.rank === 0 ? 0 : 1;
           this.rotationSpeed = res.control.rank;
         } else {
-          this.activeStatus = 0;
+          this.OnStatus = 0;
           this.rotationSpeed = 0;
         }
 
@@ -213,10 +178,10 @@ export class AirproceAccessory implements AccessoryPlugin {
       },
       (res) => {
         if (res) {
-          this.activeStatus = res.control.rank === 0 ? 0 : 1;
+          this.OnStatus = res.control.rank === 0 ? 0 : 1;
           this.rotationSpeed = res.control.rank;
         } else {
-          this.activeStatus = 0;
+          this.OnStatus = 0;
           this.rotationSpeed = 0;
         }
         callback(null);
